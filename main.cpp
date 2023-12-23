@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <conio.h>
 #include <vector>
-#include <conio.h>
+#include <windows.h>
 
 using std::cout;
 using std::endl;
@@ -22,15 +22,13 @@ using std::vector;
 // Enemy design
 // Bullet design
 
-int screen_length = 15;
-int screen_width = 30;
 
-void drawGameWindow()
+void drawGameWindow(int screen_width, int screen_length, char borderCharacter)
 {
     system("CLS");
     for (int i = 0; i < screen_width; i++)
     {
-        cout << "*";
+        cout << borderCharacter;
     }
     cout << endl;
 
@@ -39,7 +37,7 @@ void drawGameWindow()
         for (int j = 0; j < screen_width; j++)
         {
             if (j == 0 || j == screen_width - 1)
-                cout << "*";
+                cout << borderCharacter;
             else
                 cout << " ";
         }
@@ -49,15 +47,19 @@ void drawGameWindow()
 
     for (int i = 0; i < screen_width; i++)
     {
-        cout << "*";
+        cout << borderCharacter;
     }
 }
 
-void takeInput();
 
 char takeInput() 
 {
     char key;
+    if (!_kbhit())
+    {
+        return 'N';
+    }
+
     key = getch();
         switch (key)
         {
@@ -76,18 +78,6 @@ char takeInput()
             default:
                 return toupper(key);
                 break;
-            // case 72: // Up arrow
-            //     return 'W';
-            //     break;
-            // case 80: // Down arrow
-            //     return 'S';
-            //     break;
-            // case 75: // Left arrow
-            //     return 'A';
-            //     break;
-            // case 77: // Right arrow
-            //     return 'D';
-            //     break;
         }
 }
 
@@ -115,26 +105,32 @@ public:
     }
 };
 
+
 // Work on this class as well - R
 class Enemy
 {
     int enemyHealth = 1;
 };
 
+
 int main()
 {
-
+    int width = 30;
+    int height = 15;
+    int framerate = 24;
+    char borderCharacter = '*';
     Player player;
     char input;
+
     // Main game loop
     bool running = true;
-    drawGameWindow();
     while (running == true)
     {
         input = takeInput();
         if (input == 'Q') running = false;
-        drawGameWindow();
+        drawGameWindow(width, height, borderCharacter);
         player.movePlayer(input);
+        Sleep(1000/framerate);
     }
 
     return 0;
