@@ -24,13 +24,10 @@ using std::vector;
 // Y
 
 
-
-
 class Player
 {
 private:
     int playerHealth = 5;
-    char spaceshipChar = 'S';
     vector<char> bullet {'B'};
     
 
@@ -55,7 +52,7 @@ public:
     PlayerPart playerRight{'^', 0, 0};
     PlayerPart playerLeft{'^', 0, 0};
 
-    PlayerPart playerParts[4] {playerHead, playerCenter, playerRight, playerLeft};
+    PlayerPart* playerParts[4] {&playerHead, &playerCenter, &playerRight, &playerLeft};
 
     Player(int xPos, int yPos)
     {
@@ -63,7 +60,7 @@ public:
         playerCenter.yPos = yPos;
 
         playerHead.xPos = xPos;
-        playerHead.yPos = yPos + 1;
+        playerHead.yPos = yPos - 1;
 
         playerRight.xPos = xPos + 1;
         playerRight.yPos = yPos;
@@ -115,20 +112,20 @@ void drawGameWindow(int screen_width, int screen_length, char borderCharacter, P
         {
             if (j == 0 || j == screen_width - 1)
                 cout << borderCharacter;
-            for (size_t k; k < 4; k++)
+
+            bool matched = false;
+            for (size_t k {0}; k < 4; k++)
             {
-                
-                if (player.playerParts[k].xPos == i && player.playerParts[k].yPos == j) 
+                if (player.playerParts[k]->xPos == j && player.playerParts[k]->yPos == i) 
                 {
-                    cout << player.playerParts[k].character;     
-                }
-                else 
-                {
-                    cout << " ";
+                    cout << player.playerParts[k]->character;     
+                    matched = true;
                 }
             } 
-            // else
-                // cout << " ";
+            if (!matched)
+            {
+                cout << " ";
+            }
         }
         cout << endl;
     }
@@ -175,9 +172,9 @@ int main()
 {
     int width = 30;
     int height = 15;
-    int framerate = 24;
+    int framerate = 60;
     char borderCharacter = '*';
-    Player player(15, 3);
+    Player player(25, 14);
     char input;
 
     // Main game loop
