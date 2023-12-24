@@ -3,6 +3,8 @@
 #include <conio.h>
 #include <vector>
 #include <windows.h>
+#include <time.h>
+#include <random>
 
 using std::cout;
 using std::endl;
@@ -170,12 +172,14 @@ char takeInput()
 
 int main()
 {
+    srand(time(0));
     int width = 30;
     int height = 15;
     int framerate = 60;
     char borderCharacter = '*';
     Player player(25, 14);
     char input;
+    int clock = time(0);
 
     // Main game loop
     bool running = true;
