@@ -16,6 +16,7 @@ Steps for use in vscode->
     - Or 2x points buff
  - Make enemy move in the x-axis as well rather than just in the y-axis
  - Make different type of enemies  
+ - Make the player shoot bullets by themselves instead of automatic
 
 
 

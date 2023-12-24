@@ -3,8 +3,10 @@
 #include <conio.h>
 #include <vector>
 #include <windows.h>
-#include <time.h>
 #include <random>
+#include <chrono>
+#include <time.h>
+
 
 using std::cout;
 using std::endl;
@@ -24,13 +26,18 @@ using std::vector;
 
 // Enemy design
 // Y
+long long getTime();
 
 
 class Player
 {
 private:
     int playerHealth = 5;
-    vector<char> bullet {'B'};
+    char bulletCharacter = '|';
+    float bulletFrequencyPerSecond = 1;  
+    float bulletSpeedPerSecond = 15;
+    long long bulletShootClock = getTime();    
+    long long bulletMoveClock = getTime();    
     
 
     struct PlayerPart 
@@ -48,7 +55,24 @@ private:
     }; 
 
     
+    struct Bullet 
+    {
+        char character;
+        int xPos = 0;
+        int yPos = 0;
+        
+        Bullet(char character, int xPos, int yPos)
+        {
+            this->character = character;
+            this->xPos = xPos;
+            this->yPos = yPos;
+        }
+    }; 
+
+
 public:
+    vector<Bullet> bullet_array;
+
     PlayerPart playerHead{'^', 0, 0};
     PlayerPart playerCenter{'o', 0, 0};
     PlayerPart playerRight{'^', 0, 0};
@@ -89,6 +113,30 @@ public:
             playerLeft.xPos++;
         }
     }
+
+
+    void shootBullet()
+    {
+        if ((getTime() - bulletShootClock) > (1000/bulletFrequencyPerSecond))
+        {
+            Bullet bullet(bulletCharacter, playerHead.xPos, playerHead.yPos - 1);
+            bullet_array.push_back(bullet);  
+            bulletShootClock = getTime();
+        }
+
+        if ((getTime() - bulletMoveClock) > (1000/bulletSpeedPerSecond))
+        {
+            for (size_t i {0}; i < bullet_array.size(); i++)
+            {
+                bullet_array[i].yPos--;
+                if (bullet_array[i].yPos < -1)
+                {
+                    bullet_array.erase(bullet_array.begin() + i);
+                }
+            }
+            bulletMoveClock = getTime();
+        }
+    }
 };
 
 
@@ -97,6 +145,19 @@ class Enemy
 {
     int enemyHealth = 1;
 };
+
+
+long long getTime() 
+{
+    // Get the current time point
+    auto currentTime = std::chrono::system_clock::now();
+
+    // Convert the time point to milliseconds
+    auto duration = currentTime.time_since_epoch();
+    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+
+    return milliseconds;
+}
 
 
 void drawGameWindow(int screen_width, int screen_length, char borderCharacter, Player player)
@@ -121,6 +182,15 @@ void drawGameWindow(int screen_width, int screen_length, char borderCharacter, P
                 if (player.playerParts[k]->xPos == j && player.playerParts[k]->yPos == i) 
                 {
                     cout << player.playerParts[k]->character;     
+                    matched = true;
+                }
+            } 
+
+            for (size_t bullet_counter {0}; bullet_counter < player.bullet_array.size(); bullet_counter++)
+            {
+                if (player.bullet_array[bullet_counter].xPos == j && player.bullet_array[bullet_counter].yPos == i) 
+                {
+                    cout << player.bullet_array[bullet_counter].character;     
                     matched = true;
                 }
             } 
@@ -177,9 +247,8 @@ int main()
     int height = 15;
     int framerate = 60;
     char borderCharacter = '*';
-    Player player(25, 14);
+    Player player(25, height - 1);
     char input;
-    int clock = time(0);
 
     // Main game loop
     bool running = true;
@@ -187,8 +256,12 @@ int main()
     {
         input = takeInput();
         if (input == 'Q') running = false;
+
         drawGameWindow(width, height, borderCharacter, player);
+
         player.movePlayer(input);
+        player.shootBullet();
+
         Sleep(1000/framerate);
     }
 
