@@ -5,6 +5,8 @@
 #include <windows.h>
 #include <random>
 #include <chrono>
+#include <time.h>
+
 
 using std::cout;
 using std::endl;
