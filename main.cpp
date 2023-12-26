@@ -8,7 +8,13 @@
 
 #include <random>
 #include <chrono>
+
+#include <chrono>
+
+#include <random>
+#include <chrono>
 #include <time.h>
+#include <random>
 
 using std::cout;
 using std::endl;
@@ -28,6 +34,57 @@ using std::vector;
 
 // Enemy design
 // Y
+
+
+long long getTime();
+
+// Work on this class as well - R
+
+class Enemy
+{
+private:
+    char enemyCharacter = 'Y';
+    int enemyHealth = 1;
+    int enemy_spawn_speed = 5000;
+    int enemy_movement_speed = 2000;
+    long long enemy_move_time = getTime();
+    long long enemy_spawn_time = getTime();
+
+public:
+    vector<int> enemy_pos_x;
+    vector<int> enemy_pos_y;
+
+    void Logic(int width)
+    {
+        if (getTime() - enemy_move_time >= enemy_movement_speed)
+        {
+            for (size_t i{0}; i < enemy_pos_y.size(); i++)
+                enemy_pos_y[i] += 1;
+            enemy_move_time = getTime();
+        }
+
+        if (getTime() - enemy_spawn_time >= enemy_spawn_speed)
+        {
+            int new_enemy_x_pos = rand() % (width - 1) + 1;
+            int new_enemy_y_pos = 0;
+            enemy_pos_x.push_back(new_enemy_x_pos);
+            enemy_pos_y.push_back(new_enemy_y_pos);
+            enemy_spawn_time = getTime();
+        }
+    }
+
+    Enemy(int width)
+    {
+        int first_enemy_x_pos = rand() % width;
+        int first_enemy_y_pos = 0;
+        enemy_pos_x.push_back(first_enemy_x_pos);
+        enemy_pos_y.push_back(first_enemy_y_pos);
+    }
+};
+
+void drawGameWindow(int screen_width, int screen_length, char borderCharacter, Player player, Enemy enemy)
+
+long long getTime();
 
 long long getTime();
 
@@ -114,8 +171,6 @@ private:
     };
 
 public:
-    vector<Bullet> bullet_array;
-
     PlayerPart playerHead{'^', 0, 0};
     PlayerPart playerCenter{'o', 0, 0};
     PlayerPart playerRight{'^', 0, 0};
@@ -180,7 +235,48 @@ public:
     }
 };
 
+
+    void shootBullet()
+    {
+        if ((getTime() - bulletShootClock) > (1000/bulletFrequencyPerSecond))
+        {
+            Bullet bullet(bulletCharacter, playerHead.xPos, playerHead.yPos - 1);
+            bullet_array.push_back(bullet);  
+            bulletShootClock = getTime();
+        }
+
+        if ((getTime() - bulletMoveClock) > (1000/bulletSpeedPerSecond))
+        {
+            for (size_t i {0}; i < bullet_array.size(); i++)
+            {
+                bullet_array[i].yPos--;
+                if (bullet_array[i].yPos < -1)
+                {
+                    bullet_array.erase(bullet_array.begin() + i);
+                }
+            }
+            bulletMoveClock = getTime();
+        }
+    }
+};
+
+
+
+long long getTime() 
+{
+    // Get the current time point
+    auto currentTime = std::chrono::system_clock::now();
+
+    // Convert the time point to milliseconds
+    auto duration = currentTime.time_since_epoch();
+    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+
+    return milliseconds;
+}
+
+
 void drawGameWindow(int screen_width, int screen_length, char borderCharacter, Player player, Enemy enemy)
+
 
 {
     system("CLS");
@@ -198,6 +294,22 @@ void drawGameWindow(int screen_width, int screen_length, char borderCharacter, P
                 cout << borderCharacter;
 
             bool matched = false;
+
+
+            for (size_t enemy_spawner{0}; enemy_spawner < enemy.enemy_pos_x.size(); enemy_spawner++)
+            {
+                if (enemy.enemy_pos_x[enemy_spawner] != -1)
+                {
+                    if (i == enemy.enemy_pos_y[enemy_spawner] && j == enemy.enemy_pos_x[enemy_spawner])
+                    {
+                        cout << "Y";
+                        // new_enemy.Logic();
+                        matched = true;
+                    }
+                }
+            }
+
+
 
             for (size_t enemy_spawner{0}; enemy_spawner < enemy.enemy_pos_x.size(); enemy_spawner++)
             {
@@ -220,6 +332,16 @@ void drawGameWindow(int screen_width, int screen_length, char borderCharacter, P
                     matched = true;
                 }
             }
+
+            for (size_t bullet_counter {0}; bullet_counter < player.bullet_array.size(); bullet_counter++)
+            {
+                if (player.bullet_array[bullet_counter].xPos == j && player.bullet_array[bullet_counter].yPos == i) 
+                {
+                    cout << player.bullet_array[bullet_counter].character;     
+                    matched = true;
+                }
+            } 
+
 
             for (size_t bullet_counter{0}; bullet_counter < player.bullet_array.size(); bullet_counter++)
             {
@@ -244,6 +366,7 @@ void drawGameWindow(int screen_width, int screen_length, char borderCharacter, P
     }
 }
 
+
 char takeInput()
 {
     char key;
@@ -251,6 +374,7 @@ char takeInput()
     {
         return 'N';
     }
+
 
     key = getch();
     switch (key)
@@ -285,6 +409,18 @@ long long getTime()
     return milliseconds;
 }
 
+long long getTime()
+{
+    // Get the current time point
+    auto currentTime = std::chrono::system_clock::now();
+
+    // Convert the time point to milliseconds
+    auto duration = currentTime.time_since_epoch();
+    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+
+    return milliseconds;
+}
+
 int main()
 {
     srand(time(0));
@@ -292,6 +428,9 @@ int main()
     int height = 15;
     int framerate = 60;
     char borderCharacter = '*';
+    Player player(25, height - 1);
+    Enemy enemy(width);
+
     Player player(25, height - 1);
     Enemy enemy(width);
 
@@ -319,7 +458,10 @@ int main()
         player.movePlayer(input);
         player.shootBullet();
 
+        player.shootBullet();
+
         Sleep(1000 / framerate);
+
     }
 
     return 0;
